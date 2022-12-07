@@ -1,4 +1,7 @@
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import r2_score, mean_squared_error
+from sklearn.model_selection import train_test_split
 
 import PreProcessing as pre
 
@@ -9,7 +12,7 @@ data_test = pd.read_csv('cars-test.csv')
 
 # Split car-info column
 data_train = pre.split(data_train)
-data_train.drop(['car_id'], axis=1)
+data_train.drop(['car_id'], axis=1, inplace=True)
 # Change type of column ot datetime
 pre.datetime(data_train, 'date')
 
@@ -34,15 +37,6 @@ Cate_cols = list(data_train.select_dtypes('object'))
 
 data_train = pre.Feature_Encoder(data_train, Cate_cols)
 
-# X = pre.Corr(data_train, 'Price Category')
-#
-#
-# X  # Selected Features
-# Y = data_train['Price Category']  # Target
-#
-# # Split dataset into training set and test set
-# X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
-#
 # # Create a Gaussian Classifier
 # clf = RandomForestClassifier(n_estimators=100, max_depth=15)
 #
@@ -56,7 +50,7 @@ data_train = pre.Feature_Encoder(data_train, Cate_cols)
 ####################### Test data-Set ###################################
 
 # Split car-info column
-data_tes = pre.split(data_test)
+data_test = pre.split(data_test)
 
 # Change type of column ot datetime
 pre.datetime(data_test, 'date')
@@ -74,7 +68,32 @@ pre.Fill_Cate(data_test, cols)
 # for col in data_test.columns:
 #     fig = px.histogram(data_test, x=col)
 #     fig.show()
+
 # Applying label Encoding
 Cate_cols = list(data_test.select_dtypes('object'))
 
 data_test = pre.Feature_Encoder(data_test, Cate_cols)
+
+# Correlation between columns
+Num_cols = list(data_train.select_dtypes('int', 'float'))
+X = pre.Corr(data_train, 'Price Category')  # Selected Features
+Y = data_train['Price Category']  # Target
+# Split dataset into training set and test set
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=10)
+
+clf = RandomForestClassifier(n_estimators=100, criterion="entropy")
+clf.fit(X_train, Y_train)
+train_pred1 = clf.predict(X_train)
+X_predict = data_test[['condition', 'fuel_type', 'transmission', 'segment']]
+test_pred2 = clf.predict(X_predict)
+
+print("train error /\ Root_mean_squared_error :{}".format(mean_squared_error(Y_train, train_pred1, squared=False)))
+print("train error /\ r2_score :{}".format(r2_score(Y_train, train_pred1)))
+
+print("test error /\ Root_mean_squared_error :{}".format(mean_squared_error(Y_test, test_pred2)))
+print("test error /\ r2_score :{}".format(r2_score(Y_test, test_pred2)))
+
+submission = pd.DataFrame()
+submission = data_test[['car_id']]
+submission['Price Category'] = test_pred2
+submission.to_csv("sample_submission_random.csv", index=None)

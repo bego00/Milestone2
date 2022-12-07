@@ -77,5 +77,5 @@ def Corr(data, col):
     sns.heatmap(top_corr, annot=True)
     plt.show()
     top_feature = top_feature.delete(-1)
-    X = data[top_feature]
-    return X
+    C = data[top_feature]
+    return C
