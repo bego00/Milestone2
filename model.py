@@ -1,7 +1,7 @@
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 
 import PreProcessing as pre
 
@@ -34,7 +34,12 @@ pre.Fill_Cate(data_train, cols)
 #     fig.show()
 # Applying label Encoding
 Cate_cols = list(data_train.select_dtypes('object'))
-
+# Cate_cols = ['Model', 'company', 'condition', 'mileage(kilometers)', 'fuel_type', 'color', 'transmission', 'drive_unit',
+#              'segment']
+for c in Cate_cols:
+    lbl = LabelEncoder()
+    lbl.fit(list(data_train[c].values))
+    data_train[c] = lbl.transform(list(data_train[c].values))
 data_train = pre.Feature_Encoder(data_train, Cate_cols)
 
 # # Create a Gaussian Classifier
@@ -87,13 +92,20 @@ train_pred1 = clf.predict(X_train)
 X_predict = data_test[['condition', 'fuel_type', 'transmission', 'segment']]
 test_pred2 = clf.predict(X_predict)
 
-print("train error /\ Root_mean_squared_error :{}".format(mean_squared_error(Y_train, train_pred1, squared=False)))
-print("train error /\ r2_score :{}".format(r2_score(Y_train, train_pred1)))
+print('Accuracy of classifier on training set: {:.2f}'
+      .format(clf.score(X_train, Y_train)))
+print('Accuracy of  classifier on test set: {:.2f}'
+      .format(clf.score(X_test, Y_test)))
 
-print("test error /\ Root_mean_squared_error :{}".format(mean_squared_error(Y_test, test_pred2)))
-print("test error /\ r2_score :{}".format(r2_score(Y_test, test_pred2)))
+# print("train error /\ Root_mean_squared_error :{}".format(mean_squared_error(Y_train, train_pred1, squared=False)))
+# print("train error /\ r2_score :{}".format(r2_score(Y_train, train_pred1)))
+#
+# print("test error /\ Root_mean_squared_error :{}".format(mean_squared_error(Y_train, test_pred2)))
+# print("test error /\ r2_score :{}".format(r2_score(Y_train, test_pred2)))
+dic = {0: 'cheap', 1: 'expensive', 2: 'moderate', 3: 'very expensive'}
 
 submission = pd.DataFrame()
 submission = data_test[['car_id']]
 submission['Price Category'] = test_pred2
-submission.to_csv("sample_submission_random.csv", index=None)
+submission.replace({"Price Category": dic}, inplace=True)
+submission.to_csv('submission_Random.csv',index=None)
