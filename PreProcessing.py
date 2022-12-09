@@ -73,7 +73,7 @@ def Corr(data, col):
     corr = data.corr()
     top_feature = corr.index[abs(corr[col]) > 0.1]
     # Correlation plot
-    plt.subplots(figsize=(12, 8))
+    plt.subplots(figsize=(10, 6))
     top_corr = data[top_feature].corr()
     sns.heatmap(top_corr, annot=True)
     plt.show()

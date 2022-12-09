@@ -13,8 +13,7 @@ data_test = pd.read_csv('cars-test.csv')
 # Split car-info column
 data_train = pre.split(data_train)
 data_train.drop(['car_id'], axis=1, inplace=True)
-# Change type of column ot datetime
-pre.datetime(data_train, 'date')
+
 
 # Convert  column to lowercase
 pre.LowerCase(data_train, 'fuel_type')
@@ -60,10 +59,9 @@ Cate_cols = list(data_test.select_dtypes('object'))
 data_test = pre.Feature_Encoder(data_test, Cate_cols)
 
 # Correlation between columns
-Num_cols = list(data_train.select_dtypes('int', 'float'))
 X = pre.Corr(data_train, 'Price Category')  # Selected Features
 Y = data_train['Price Category']  # Target
-
+print(X)
 # Split dataset into training set and test set
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=10)
 
@@ -71,7 +69,7 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_
 clf = RandomForestClassifier(n_estimators=100)
 clf.fit(X_train, Y_train)
 train_pred1 = clf.predict(X_train)
-X_predict = data_test[['condition', 'fuel_type', 'transmission', 'segment']]
+X_predict = data_test[['date', 'condition', 'fuel_type', 'transmission', 'segment']]
 test_pred2 = clf.predict(X_predict)
 
 print('Accuracy of Random classifier on training set: {:.2f}'
@@ -85,8 +83,8 @@ print('Accuracy of Random classifier on test set: {:.2f}'
 gnb = GaussianNB()
 # fit the model
 gnb.fit(X_train, Y_train)
-train_pred_gnb=gnb.predict(X_train)
-X_predict = data_test[['condition', 'fuel_type', 'transmission', 'segment']]
+train_pred_gnb = gnb.predict(X_train)
+X_predict = data_test[['date', 'condition', 'fuel_type', 'transmission', 'segment']]
 test_pred2 = clf.predict(X_predict)
 
 print('Accuracy of  Gaussian classifier on training set: {:.2f}'
@@ -94,6 +92,7 @@ print('Accuracy of  Gaussian classifier on training set: {:.2f}'
 print('Accuracy of  Gaussian classifier on test set: {:.2f}'
       .format(clf.score(X_test, Y_test)))
 
+###################################################################
 
 # ################## DecisionTreeClassifier #######################
 # from sklearn.tree import DecisionTreeClassifier
