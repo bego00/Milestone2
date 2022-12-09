@@ -20,6 +20,7 @@ def split(data):
     data.insert(2, 'company', data.pop('company'))
     data.insert(3, 'date', data.pop('date'))
     data.drop(columns=["car-info"], inplace=True)
+    data['date'] = pd.to_numeric(data['date'], errors='coerce')
     return data
 
 
