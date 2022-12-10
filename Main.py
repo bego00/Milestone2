@@ -2,6 +2,8 @@ import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
+from sklearn.decomposition import PCA
+from sklearn.tree import DecisionTreeClassifier
 
 import PreProcessing as pre
 
@@ -13,7 +15,6 @@ data_test = pd.read_csv('cars-test.csv')
 # Split car-info column
 data_train = pre.split(data_train)
 data_train.drop(['car_id'], axis=1, inplace=True)
-
 
 # Convert  column to lowercase
 pre.LowerCase(data_train, 'fuel_type')
@@ -30,8 +31,6 @@ pre.Fill_Cate(data_train, cols)
 #     fig.show()
 # Applying label Encoding
 Cate_cols = list(data_train.select_dtypes('object'))
-# Cate_cols = ['Model', 'company', 'condition', 'mileage(kilometers)', 'fuel_type', 'color', 'transmission', 'drive_unit',
-#              'segment']
 data_train = pre.Feature_Encoder(data_train, Cate_cols)
 
 ####################### Test data-Set ###################################
@@ -59,13 +58,17 @@ Cate_cols = list(data_test.select_dtypes('object'))
 data_test = pre.Feature_Encoder(data_test, Cate_cols)
 
 # Correlation between columns
-X = pre.Corr(data_train, 'Price Category')  # Selected Features
+# pre.Corr(data_train, 'Price Category')  # Selected Features
+X = data_train.iloc[:, :-1]
 Y = data_train['Price Category']  # Target
-print(X)
-# Split dataset into training set and test set
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=10)
 
-# ################## RandomForestClassifier #######################
+# Applying PCA
+pca = PCA(n_components=5, random_state=2022)
+pca_6 = pca.fit_transform(X)
+# Split dataset into training set and test set
+X_train, X_test, Y_train, Y_test = train_test_split(pca_6, Y, test_size=0.2, random_state=10)
+
+# # ################## RandomForestClassifier #######################
 clf = RandomForestClassifier(n_estimators=100)
 clf.fit(X_train, Y_train)
 train_pred1 = clf.predict(X_train)
@@ -77,39 +80,38 @@ print('Accuracy of Random classifier on training set: {:.2f}'
 print('Accuracy of Random classifier on test set: {:.2f}'
       .format(clf.score(X_test, Y_test)))
 ###################################################################
-
-################# Gaussian Naive Bayes classifier #################
-# instantiate the model
-gnb = GaussianNB()
-# fit the model
-gnb.fit(X_train, Y_train)
-train_pred_gnb = gnb.predict(X_train)
-X_predict = data_test[['date', 'condition', 'fuel_type', 'transmission', 'segment']]
-test_pred2 = clf.predict(X_predict)
-
-print('Accuracy of  Gaussian classifier on training set: {:.2f}'
-      .format(clf.score(X_train, Y_train)))
-print('Accuracy of  Gaussian classifier on test set: {:.2f}'
-      .format(clf.score(X_test, Y_test)))
-
-###################################################################
-
-# ################## DecisionTreeClassifier #######################
-# from sklearn.tree import DecisionTreeClassifier
+#
+# ################# Gaussian Naive Bayes classifier #################
+# # instantiate the model
+# gnb = GaussianNB()
+# # fit the model
+# gnb.fit(X_train, Y_train)
+# train_pred_gnb = gnb.predict(X_train)
+# X_predict = data_test[['date', 'condition', 'fuel_type', 'transmission', 'segment']]
+# test_pred2_gnb = gnb.predict(X_predict)
+#
+# print('Accuracy of  Gaussian classifier on training set: {:.2f}'
+#       .format(gnb.score(X_train, Y_train)))
+# print('Accuracy of  Gaussian classifier on test set: {:.2f}'
+#       .format(gnb.score(X_test, Y_test)))
+# ###################################################################
+#
+# # ################## DecisionTreeClassifier #######################
+# # from sklearn.tree import DecisionTreeClassifier
 #
 # # Creating model object
 # model_dt = DecisionTreeClassifier()
 # # Training Model
 # model_dt.fit(X_train, Y_train)
-# pred_dt = model_dt.predict(X_test)
+# pred_Tree = model_dt.predict(X_test)
 # X_predict = data_test[['condition', 'fuel_type', 'transmission', 'segment']]
-# test_pred2 = model_dt.predict(X_predict)
-# print('Accuracy of classifier on training set: {:.2f}'
+# test_pred2_Tree = model_dt.predict(X_predict)
+# print('Accuracy of DecisionTree classifier on training set: {:.2f}'
 #       .format(model_dt.score(X_train, Y_train)))
-# print('Accuracy of  classifier on test set: {:.2f}'
+# print('Accuracy of  DecisionTree classifier on test set: {:.2f}'
 #       .format(model_dt.score(X_test, Y_test)))
-###################################################################
-
+# ###################################################################
+# #
 dic = {0: 'cheap', 1: 'expensive', 2: 'moderate', 3: 'very expensive'}
 submission = pd.DataFrame()
 submission = data_test[['car_id']]
