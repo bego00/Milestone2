@@ -2,7 +2,7 @@ import numpy as np  # linear algebra
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 from matplotlib import pyplot as plt
 import seaborn as sns
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 
 # Split car-info column
@@ -57,6 +57,12 @@ def Fill_Cate(data, cols):
         data[col] = data[col].apply(lambda x: permutation[np.random.randint(end)] if pd.isnull(x) else x)
         # data[col] = data[col].fillna(data[col].mode()[0])
         return data
+
+
+def one_hot_encode(data, cols):
+    for i in cols:
+        t = OneHotEncoder()
+        data[i] = t.fit_transform(data[i])
 
 
 # Applying label Encoding
